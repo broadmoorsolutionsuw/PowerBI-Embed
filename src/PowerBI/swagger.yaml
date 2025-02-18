@@ -1,0 +1,179 @@
+openapi: 3.0.0
+info:
+  title: Power BI Embed Token Service
+  description: Service for generating Power BI embed tokens with role-level security (RLS)
+  version: 1.0.0
+  contact:
+    name: Development Team
+
+servers:
+  - url: http://localhost:5300
+    description: Local Development
+  - url: https://your-production-url
+    description: Production Environment
+
+paths:
+  /api/powerbi/embedToken:
+    post:
+      summary: Generate Power BI embed token
+      description: |
+        Generates an embed token for Power BI reports with role-level security.
+        Supports multiple roles and validates username format based on role type.
+      operationId: generateEmbedToken
+      tags:
+        - Embed Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbedTokenRequest'
+            examples:
+              MDG_Number:
+                summary: MDG_Number role example
+                value:
+                  username: "0100072994"
+                  datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
+                  roles: ["MDG_Number"]
+              MDG:
+                summary: MDG role example
+                value:
+                  username: "994US30"
+                  datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
+                  roles: ["MDG"]
+      responses:
+        '200':
+          description: Successfully generated embed token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbedTokenResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidUsername:
+                  summary: Invalid username format
+                  value:
+                    error: "Invalid username format. Expected: MDG number + sales org (e.g., \"994US30\")"
+                    status: 400
+                missingParams:
+                  summary: Missing required parameters
+                  value:
+                    error: "Invalid request. Required: username and datasetIds array"
+                    status: 400
+        '401':
+          description: Unauthorized - Invalid or expired authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    EmbedTokenRequest:
+      type: object
+      required:
+        - username
+        - datasetIds
+      properties:
+        username:
+          type: string
+          description: |
+            User identifier. Format depends on role:
+            - For MDG_Number role: 6-10 digit number
+            - For MDG role: format like "994US30"
+          example: "0100072994"
+        datasetIds:
+          type: array
+          items:
+            type: string
+          description: Array of Power BI dataset IDs
+          example: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
+        roles:
+          type: array
+          items:
+            type: string
+          description: Array of roles for RLS. Defaults to ["MDG"] if not provided
+          example: ["MDG_Number"]
+
+    ReportDetail:
+      type: object
+      required:
+        - reportId
+        - reportName
+        - embedUrl
+      properties:
+        reportId:
+          type: string
+          description: Power BI report ID
+        reportName:
+          type: string
+          description: Name of the report
+        embedUrl:
+          type: string
+          description: URL for embedding the report
+
+    EmbedTokenResponse:
+      type: object
+      required:
+        - accessToken
+        - embedUrl
+        - expiry
+        - status
+      properties:
+        accessToken:
+          type: string
+          description: Generated embed token
+        embedUrl:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportDetail'
+          description: Array of report details with embed URLs
+        expiry:
+          type: string
+          format: date-time
+          description: Token expiration timestamp
+        status:
+          type: integer
+          enum: [200]
+          description: Response status code
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - status
+      properties:
+        error:
+          type: string
+          description: Error message
+        status:
+          type: integer
+          description: HTTP status code
+        details:
+          type: string
+          description: Additional error details (if available)
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication
+
+tags:
+  - name: Embed Token
+    description: Operations for generating Power BI embed tokens
+
+security:
+  - ApiKeyAuth: []
