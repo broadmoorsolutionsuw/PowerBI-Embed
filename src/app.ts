@@ -13,7 +13,19 @@ app.use('/css', express.static('./node_modules/bootstrap/dist/css/')); // Redire
 app.use('/public', express.static('./public/')); // Use custom JS and CSS files
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      frameSrc: ["'self'", "https://app.powerbi.com"],
+      scriptSrc: ["'self'", "https://*.powerbi.com"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "https://*.powerbi.com", "data:"],
+      connectSrc: ["'self'", "https://*.powerbi.com", "https://api.powerbi.com"]
+    }
+  }
+}));
+
 app.use(cors());
 app.use(express.json());
 

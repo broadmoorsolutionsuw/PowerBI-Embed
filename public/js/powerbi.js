@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Ensure powerbi is available
     if (!window['powerbi-client']) {
         console.error('Power BI client library not loaded');
         return;
     }
-
+    
     const reportContainer = document.getElementById('report-container');
     const models = window['powerbi-client'].models;
 
@@ -18,9 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            username: "0100072994",
+            username: "0100072911US30",
             datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"],
-            roles: ["MDG_Number"]
+            roles: ["MDG_ORG_CD"]
         }),
     })
     .then(response => {
@@ -32,14 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(embedData => {
         console.log('Embed data received:', embedData);
 
-        // Create the embed configuration
         const embedConfig = {
             type: 'report',
             tokenType: models.TokenType.Embed,
             accessToken: embedData.accessToken,
-            embedUrl: embedData.embedUrl[0].embedUrl,
-            id: embedData.embedUrl[0].reportId,
-            // permissions: models.Permissions.All,
+            embedUrl: embedData.embedUrl[1].embedUrl,
+            id: embedData.embedUrl[1].reportId,
+            permissions: models.Permissions.All,
             settings: {
                 background: models.BackgroundType.Transparent,
                 filterPaneEnabled: true,
