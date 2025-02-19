@@ -7,7 +7,6 @@ import PowerBIRouter from './PowerBI';
 const app = express();
 
 app.use('/js', express.static('./node_modules/bootstrap/dist/js/')); // Redirect bootstrap JS
-app.use('/js', express.static('./node_modules/jquery/dist/')); // Redirect JS jQuery
 app.use('/js', express.static('./node_modules/powerbi-client/dist/')) // Redirect JS PowerBI
 app.use('/css', express.static('./node_modules/bootstrap/dist/css/')); // Redirect CSS bootstrap
 app.use('/public', express.static('./public/')); // Use custom JS and CSS files
@@ -28,6 +27,7 @@ app.use(helmet({
 
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 
 app.get('/test', (req, res) => {

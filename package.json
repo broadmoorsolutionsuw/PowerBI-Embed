@@ -21,7 +21,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
-    "jquery": "^3.5.1",
     "powerbi-client": "^2.23.1",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
