@@ -8,7 +8,7 @@ export const createTokenRequestData = (request: EmbedTokenRequest) => {
     datasets: request.datasetIds.map(id => ({ id })),
     identities: [{
       username: request.username,
-      roles: request.roles || ['MDG'],
+      roles: request.roles || ['MDG_ORG_CD'],
       datasets: request.datasetIds
     }]
   };
@@ -17,8 +17,8 @@ export const createTokenRequestData = (request: EmbedTokenRequest) => {
   return formData;
 };
 
-async function findReportByDatasetId(token: string, datasetId: string): Promise<{
-  report: PowerBIReportInfo;
+async function findReportsByDatasetId(token: string, datasetId: string): Promise<{
+  reports: PowerBIReportInfo[];
   workspaceId: string;
 } | null> {
   try {
@@ -32,7 +32,7 @@ async function findReportByDatasetId(token: string, datasetId: string): Promise<
       }
     );
 
-    console.log({workspacesResponse: workspacesResponse.data.value })
+    console.log({ workspacesResponse: workspacesResponse.data.value })
 
     // For each workspace, look for reports
     for (const workspace of workspacesResponse.data.value) {
@@ -49,13 +49,13 @@ async function findReportByDatasetId(token: string, datasetId: string): Promise<
         console.log({ reportsResponse: reportsResponse.data.value })
 
         // Find the report that uses our datasetId
-        const report = reportsResponse.data.value.find(
+        const reports = reportsResponse.data.value.filter(
           (r: PowerBIReportInfo) => r.datasetId === datasetId
         );
 
-        if (report) {
+        if (reports) {
           return {
-            report,
+            reports,
             workspaceId: workspace.id
           };
         }
@@ -86,7 +86,7 @@ export const generateEmbedToken = async (req: any, res: any) => {
     const token = await getAccessToken(config);
 
     // Find the report using the first datasetId
-    const reportInfo = await findReportByDatasetId(token, datasetIds[0]);
+    const reportInfo = await findReportsByDatasetId(token, datasetIds[0]);
 
     if (!reportInfo) {
       return res.status(400).json({
@@ -95,11 +95,13 @@ export const generateEmbedToken = async (req: any, res: any) => {
       });
     }
 
-    const { report, workspaceId } = reportInfo;
+    const { reports, workspaceId } = reportInfo;
 
     // Construct the token request payload
     const formData: GenerateTokenRequest = {
-      reports: [{ id: report.id }],
+      reports: reports.map((r: PowerBIReportInfo) => {
+        return { id: r.id }
+      }),
       datasets: datasetIds.map((id: string) => ({ id })),
       targetWorkspaces: [{ id: workspaceId }]
     };
@@ -125,20 +127,22 @@ export const generateEmbedToken = async (req: any, res: any) => {
     );
 
 
-    console.log({ report, tokenResponse })
+    console.log({ reports, tokenResponse })
     // Structure the response
     const response = {
       accessToken: tokenResponse.data.token,
-      embedUrl: [{
-        reportId: report.id,
-        reportName: report.name,
-        embedUrl: report.embedUrl
-      }],
+      embedUrl: reports.map((report: PowerBIReportInfo) => {
+        return {
+          reportId: report.id,
+          reportName: report.name,
+          embedUrl: report.embedUrl
+        }
+      }),
       expiry: tokenResponse.data.expiration,
       status: 200
     };
 
-    console.log(JSON.stringify(report, null, 2))
+    console.log(JSON.stringify(reports, null, 2))
 
     res.json(response);
   } catch (error: any) {

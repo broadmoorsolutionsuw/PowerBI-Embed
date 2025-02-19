@@ -34,7 +34,7 @@ export const validateEmbedTokenRequest = (
         error: 'For MDG_Number role, username must be a number between 6 and 10 digits'
       });
     }
-  } else if (roles?.includes('MDG')) {
+  } else if (roles?.includes('MDG_ORG_CD')) {
     // For MDG role, "994US30"
     const mdgRegex = /^\d+US\d{2}$/;
     if (!mdgRegex.test(username)) {

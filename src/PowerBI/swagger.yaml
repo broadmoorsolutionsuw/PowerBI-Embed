@@ -35,12 +35,24 @@ paths:
                   username: "0100072994"
                   datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
                   roles: ["MDG_Number"]
-              MDG:
-                summary: MDG role example
+              MDG_ORG_CD:
+                summary: "MDG_ORG_CD role example"
                 value:
-                  username: "994US30"
+                  username: "0100072911US30"
                   datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
-                  roles: ["MDG"]
+                  roles: ["MDG_ORG_CD"]
+              Product:
+                summary: "Product example"
+                value:
+                  username: "4175-88"
+                  datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
+                  roles: ["Product"]
+              MDG_Product:
+                summary: "MDG & Product example"
+                value:
+                  username: "4175-88"
+                  datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"]
+                  roles: ["Product"]
       responses:
         '200':
           description: Successfully generated embed token
@@ -91,8 +103,8 @@ components:
           description: |
             User identifier. Format depends on role:
             - For MDG_Number role: 6-10 digit number
-            - For MDG role: format like "994US30"
-          example: "0100072994"
+            - For "MDG_ORG_CD role: format like "0100072911US30"
+          example: "0100072911US30"
         datasetIds:
           type: array
           items:
@@ -103,7 +115,7 @@ components:
           type: array
           items:
             type: string
-          description: Array of roles for RLS. Defaults to ["MDG"] if not provided
+          description: Array of roles for RLS. Defaults to ["MDG_ORG_CD"] if not provided
           example: ["MDG_Number"]
 
     ReportDetail:
