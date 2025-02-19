@@ -7,21 +7,18 @@ export const validateEmbedTokenRequest = (
 ) => {
   const { username, datasetIds, roles } = req.body;
 
-  // Basic presence check
   if (!username || !datasetIds) {
     return res.status(400).json({
       error: 'Invalid request. Required: username and datasetIds array'
     });
   }
 
-  // Validate datasetIds is an array
   if (!Array.isArray(datasetIds)) {
     return res.status(400).json({
       error: 'datasetIds must be an array'
     });
   }
 
-  // Validate datasetIds are non-empty strings
   if (!datasetIds.every(id => typeof id === 'string' && id.length > 0)) {
     return res.status(400).json({
       error: 'All datasetIds must be non-empty strings'
@@ -30,7 +27,7 @@ export const validateEmbedTokenRequest = (
 
   // Role-specific username validation
   if (roles?.includes('MDG_Number')) {
-    // For MDG_Number role, username should be 6-10 digits
+    // For MDG_Number role, 6-10 digits
     const numericRegex = /^\d{6,10}$/;
     if (!numericRegex.test(username)) {
       return res.status(400).json({
@@ -38,7 +35,7 @@ export const validateEmbedTokenRequest = (
       });
     }
   } else if (roles?.includes('MDG')) {
-    // For MDG role, validate format like "994US30"
+    // For MDG role, "994US30"
     const mdgRegex = /^\d+US\d{2}$/;
     if (!mdgRegex.test(username)) {
       return res.status(400).json({

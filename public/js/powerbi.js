@@ -1,83 +1,83 @@
-const models = window["powerbi-client"].models;
-const reportContainer = $("#report-container").get(0);
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure powerbi is available
+    if (!window['powerbi-client']) {
+        console.error('Power BI client library not loaded');
+        return;
+    }
 
-// Initialize iframe for embedding report first
-powerbi.bootstrap(reportContainer, { type: "report" });
+    const reportContainer = document.getElementById('report-container');
+    const models = window['powerbi-client'].models;
 
-// Then make the API call
-$.ajax({
-  type: "POST",
-  url: "/api/powerbi/embedToken",
-  dataType: "json",
-  contentType: "application/json",
-  data: JSON.stringify({
-    username: "0100072994",
-    datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"],
-    roles: ["MDG_Number"]
-  }),
-  success: function (embedData) {
-    // Create the embed configuration
-    const reportLoadConfig = {
-      type: "report",
-      tokenType: models.TokenType.Embed,
-      accessToken: embedData.accessToken,
-      embedUrl: embedData.embedUrl[0].embedUrl,
-      settings: {
-        background: models.BackgroundType.Transparent,
-      }
-    };
+    // Initialize container
+    powerbi.bootstrap(reportContainer, { type: "report" });
 
-    // Store token expiry
-    tokenExpiry = embedData.expiry;
 
-    // Embed the report
-    const report = powerbi.embed(reportContainer, reportLoadConfig);
+    fetch('/api/powerbi/embedToken', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: "0100072994",
+            datasetIds: ["a6b6e23d-d51b-48d6-a61c-0ebb22d08082"],
+            roles: ["MDG_Number"]
+        }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(embedData => {
+        console.log('Embed data received:', embedData);
 
-    // Clear and set event handlers
-    report.off("loaded");
-    report.on("loaded", function () {
-      console.log("Report load successful");
+        // Create the embed configuration
+        const embedConfig = {
+            type: 'report',
+            tokenType: models.TokenType.Embed,
+            accessToken: embedData.accessToken,
+            embedUrl: embedData.embedUrl[0].embedUrl,
+            id: embedData.embedUrl[0].reportId,
+            // permissions: models.Permissions.All,
+            settings: {
+                background: models.BackgroundType.Transparent,
+                filterPaneEnabled: true,
+                navContentPaneEnabled: true
+            }
+        };
+
+        // Embed the report
+        const report = powerbi.embed(reportContainer, embedConfig);
+
+        // Handle events
+        report.on('loaded', function() {
+            console.log('Report loaded successfully');
+        });
+
+        report.on('rendered', function() {
+            console.log('Report rendered successfully');
+        });
+
+        report.on('error', function(event) {
+            console.error('Error loading report:', event.detail);
+            showError(event.detail.message || 'Error loading report');
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError(error.message);
     });
-
-    report.off("rendered");
-    report.on("rendered", function () {
-      console.log("Report render successful");
-    });
-
-    report.off("error");
-    report.on("error", function (event) {
-      console.error("Error:", event.detail);
-    });
-  },
-  error: function (err) {
-    // Show error container
-    const errorContainer = $(".error-container");
-    $(".embed-container").hide();
-    errorContainer.show();
-
-    // Parse error message
-    const errMsg = JSON.parse(err.responseText)['error'];
-    const errorLines = errMsg.split("\r\n");
-
-    // Create error header
-    const errHeader = document.createElement("p");
-    const strong = document.createElement("strong");
-    const node = document.createTextNode("Error Details:");
-
-    // Get error container
-    const errContainer = errorContainer.get(0);
-
-    // Add error header
-    strong.appendChild(node);
-    errHeader.appendChild(strong);
-    errContainer.appendChild(errHeader);
-
-    // Add error lines
-    errorLines.forEach(element => {
-      const errorContent = document.createElement("p");
-      const node = document.createTextNode(element);
-      errorContent.appendChild(node);
-      errContainer.appendChild(errorContent);
-    });
-  }
 });
+
+function showError(message) {
+    const errorContainer = document.querySelector('.error-container');
+    const reportContainer = document.getElementById('report-container');
+    
+    reportContainer.innerHTML = '';
+    errorContainer.innerHTML = `
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> ${message}
+        </div>
+    `;
+}

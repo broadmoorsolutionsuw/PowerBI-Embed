@@ -6,7 +6,6 @@ import PowerBIRouter from './PowerBI';
 
 const app = express();
 
-
 app.use('/js', express.static('./node_modules/bootstrap/dist/js/')); // Redirect bootstrap JS
 app.use('/js', express.static('./node_modules/jquery/dist/')); // Redirect JS jQuery
 app.use('/js', express.static('./node_modules/powerbi-client/dist/')) // Redirect JS PowerBI
@@ -26,7 +25,6 @@ app.get('/test', (req, res) => {
 // Routes
 app.use('/api/powerbi', PowerBIRouter);
 
-
 const port = process.env.PORT || 5300;
 
 app.listen(port, () => {
@@ -35,7 +33,7 @@ app.listen(port, () => {
 });
 
 
-// app.use("*", notFound);
+// Internal Error Route
 app.use(function (
   error: any,
   req: any,

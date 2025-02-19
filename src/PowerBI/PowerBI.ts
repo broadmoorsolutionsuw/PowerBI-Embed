@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getAccessToken } from './Auth';
-import { EmbedTokenRequest, GenerateTokenRequest, PowerBIWorkspaceInfo, PowerBIReportInfo } from '../types';
+import { EmbedTokenRequest, GenerateTokenRequest, PowerBIReportInfo } from '../types';
 import config from '../config';
 
 export const createTokenRequestData = (request: EmbedTokenRequest) => {
